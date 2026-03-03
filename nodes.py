@@ -44,8 +44,8 @@ try:
         source_file = os.path.basename(d.metadata.get("source", "Unknown_Document"))
         d.page_content = f"[Source Document: {source_file}]\n{clean_text}"
 
-    # IMPORTANT: Download HuggingFace embeddings safely
     print("--- DOWNLOADING EMBEDDING MODEL ---")
+    # Perfectly aligned with 4 spaces
     embeddings = FastEmbedEmbeddings(model_name="BAAI/bge-small-en-v1.5")
 
     vectorstore = FAISS.from_documents(chunks, embeddings)
@@ -57,8 +57,7 @@ try:
     
 except Exception as e:
     print(f"CRITICAL ERROR STARTING DATABASE: {e}")
-    # If FAISS crashes, create a dummy vectorstore so the API doesn't fail entirely
-   embeddings = FastEmbedEmbeddings(model_name="BAAI/bge-small-en-v1.5")
+    embeddings = FastEmbedEmbeddings(model_name="BAAI/bge-small-en-v1.5")
     dummy_docs = [Document(page_content="Database Initialization Failed.", metadata={"source": "system"})]
     vectorstore = FAISS.from_documents(dummy_docs, embeddings)
     retriever = vectorstore.as_retriever(search_kwargs={"k": 1})
