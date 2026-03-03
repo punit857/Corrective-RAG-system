@@ -22,11 +22,6 @@ UPPER_TH = 0.7
 LOWER_TH = 0.3
 
 
-
-
-
-
-
 # --- INITIALIZE DATABASE SAFELY ---
 try:
     print("--- LOADING AND INDEXING PDF DOCUMENTS ---")
@@ -68,23 +63,7 @@ except Exception as e:
     vectorstore = FAISS.from_documents(dummy_docs, embeddings)
     retriever = vectorstore.as_retriever(search_kwargs={"k": 1})
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 # --- NODE 0: THE RETRIEVER ---
-
 def retrieve_node(state: GraphState):
     print("---RETRIEVING DOCUMENTS FROM DATABASE---")
     question = state["question"]

@@ -125,6 +125,8 @@ async def delete_document(filename: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+# ... (all your existing api.py code) ...
+
 @app.get("/health")
 async def health_check():
     return {"status": "Active"}
