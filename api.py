@@ -129,8 +129,4 @@ async def delete_document(filename: str):
 async def health_check():
     return {"status": "Active"}
 
-    if __name__ == "__main__":
-    import uvicorn
-    # Grab the port from Render's environment, or default to 8000
-    port = int(os.environ.get("PORT", 8000))
-    uvicorn.run(app, host="0.0.0.0", port=port)
+   

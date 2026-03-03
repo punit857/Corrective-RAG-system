@@ -21,34 +21,66 @@ llm = ChatGroq(model="llama-3.3-70b-versatile", temperature=0)
 UPPER_TH = 0.7
 LOWER_TH = 0.3
 
-print("--- LOADING AND INDEXING PDF DOCUMENTS ---")
-os.makedirs("documents", exist_ok=True)
-pdf_files = [f for f in os.listdir("documents") if f.endswith(".pdf")]
-docs = []
 
 
-for pdf in pdf_files:
-    docs.extend(PyPDFLoader(f"documents/{pdf}").load())
-
-if not docs:
-    print(" No PDFs found. Initializing empty database.")
-    docs = [Document(page_content="Empty Knowledge Base.", metadata={"source": "system"})]
-
-text_splitter = RecursiveCharacterTextSplitter(chunk_size=900, chunk_overlap=150)
-chunks = text_splitter.split_documents(docs)
 
 
-for d in chunks:
-    clean_text = d.page_content.encode("utf-8", "ignore").decode("utf-8", "ignore")
-    source_file = os.path.basename(d.metadata.get("source", "Unknown_Document"))
-    d.page_content = f"[Source Document: {source_file}]\n{clean_text}"
-
-embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
 
 
-vectorstore = FAISS.from_documents(chunks, embeddings)
-retriever = vectorstore.as_retriever(search_type="similarity", search_kwargs={"k": 4})
-print("--- DATABASE CREATED ---")
+# --- INITIALIZE DATABASE SAFELY ---
+try:
+    print("--- LOADING AND INDEXING PDF DOCUMENTS ---")
+    os.makedirs("documents", exist_ok=True)
+    pdf_files = [f for f in os.listdir("documents") if f.endswith(".pdf")]
+    docs = []
+
+    for pdf in pdf_files:
+        docs.extend(PyPDFLoader(f"documents/{pdf}").load())
+
+    if not docs:
+        print("⚠️ No PDFs found. Initializing empty database.")
+        docs = [Document(page_content="Empty Knowledge Base.", metadata={"source": "system"})]
+
+    text_splitter = RecursiveCharacterTextSplitter(chunk_size=900, chunk_overlap=150)
+    chunks = text_splitter.split_documents(docs)
+
+    for d in chunks:
+        clean_text = d.page_content.encode("utf-8", "ignore").decode("utf-8", "ignore")
+        source_file = os.path.basename(d.metadata.get("source", "Unknown_Document"))
+        d.page_content = f"[Source Document: {source_file}]\n{clean_text}"
+
+    # IMPORTANT: Download HuggingFace embeddings safely
+    print("--- DOWNLOADING EMBEDDING MODEL ---")
+    embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
+
+    vectorstore = FAISS.from_documents(chunks, embeddings)
+    retriever = vectorstore.as_retriever(
+        search_type="mmr", 
+        search_kwargs={"k": 8, "fetch_k": 30}
+    )
+    print("--- DATABASE CREATED SUCCESSFULLY ---")
+    
+except Exception as e:
+    print(f"CRITICAL ERROR STARTING DATABASE: {e}")
+    # If FAISS crashes, create a dummy vectorstore so the API doesn't fail entirely
+    embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
+    dummy_docs = [Document(page_content="Database Initialization Failed.", metadata={"source": "system"})]
+    vectorstore = FAISS.from_documents(dummy_docs, embeddings)
+    retriever = vectorstore.as_retriever(search_kwargs={"k": 1})
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 # --- NODE 0: THE RETRIEVER ---
