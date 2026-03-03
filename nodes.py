@@ -8,7 +8,7 @@ from langchain_groq import ChatGroq
 from langchain_community.tools.tavily_search import TavilySearchResults
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_community.vectorstores import FAISS
-from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_community.embeddings.fastembed import FastEmbedEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 from state import GraphState
@@ -46,7 +46,7 @@ try:
 
     # IMPORTANT: Download HuggingFace embeddings safely
     print("--- DOWNLOADING EMBEDDING MODEL ---")
-    embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
+    embeddings = FastEmbedEmbeddings(model_name="BAAI/bge-small-en-v1.5")
 
     vectorstore = FAISS.from_documents(chunks, embeddings)
     retriever = vectorstore.as_retriever(
@@ -58,7 +58,7 @@ try:
 except Exception as e:
     print(f"CRITICAL ERROR STARTING DATABASE: {e}")
     # If FAISS crashes, create a dummy vectorstore so the API doesn't fail entirely
-    embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
+   embeddings = FastEmbedEmbeddings(model_name="BAAI/bge-small-en-v1.5")
     dummy_docs = [Document(page_content="Database Initialization Failed.", metadata={"source": "system"})]
     vectorstore = FAISS.from_documents(dummy_docs, embeddings)
     retriever = vectorstore.as_retriever(search_kwargs={"k": 1})
