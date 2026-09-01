@@ -15,7 +15,7 @@ from state import GraphState
 
 load_dotenv()
 
-llm = ChatGroq(model="llama-3.1-8b-instant", temperature=0)
+llm = ChatGroq(model="openai/gpt-oss-20b", temperature=0)
 
 # --- THRESHOLDS ---
 UPPER_TH = 0.7
